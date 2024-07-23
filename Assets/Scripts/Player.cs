@@ -11,7 +11,7 @@ public class Player : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Vector3 direction;
     private int spriteIndex;
-
+    [SerializeField] GameManager gameManager;   
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -34,6 +34,7 @@ public class Player : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0)) {
             direction = Vector3.up * strength;
+            gameManager.PlayTap();
         }
 
         // Apply gravity and update the position
