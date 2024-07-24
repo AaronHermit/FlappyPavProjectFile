@@ -6,6 +6,7 @@ public class Spawner : MonoBehaviour
     public Pipes[] prefabs; // Change from single prefab to array
     public GameObject Enemy;
     public Transform startEnemy;
+    public float enemySpawnRate = 5f;
     public float spawnRate = 1f;
     public float minHeight = -1f;
     public float maxHeight = 2f;
@@ -15,11 +16,13 @@ public class Spawner : MonoBehaviour
     private void OnEnable()
     {
         InvokeRepeating(nameof(Spawn), spawnRate, spawnRate);
+       
     }
 
     private void OnDisable()
     {
         CancelInvoke(nameof(Spawn));
+       
     }
 
     private void Spawn()
@@ -33,34 +36,9 @@ public class Spawner : MonoBehaviour
             pipes.transform.position += Vector3.up * Random.Range(minHeight, maxHeight);
             pipes.gap = verticalGap;
            
-
-            //// Spawn the enemy prefab
-            //GameObject enemyObject = Instantiate(Enemy, startEnemy.position, Quaternion.identity);
-
-            //// Adjust position of enemy
-            //Vector3 enemyPosition = enemyObject.transform.position;
-            //enemyPosition += Vector3.back; // Move enemy back in z-axis (assuming this is intended)
-            //enemyObject.transform.position = enemyPosition;
-
-            //// Continuously move the enemy in the x-axis
-            //StartCoroutine(MoveEnemy(enemyObject));
-
-            // Set gap for pipes (assuming pipes.gap needs to be set here)
             
         }
     }
+    
 
-    private IEnumerator MoveEnemy(GameObject enemy)
-    {
-        while (true)
-        {
-            // Adjust the movement speed as needed (1 unit per second in this example)
-            float movementSpeed = 1f;
-            Vector3 currentPosition = enemy.transform.position;
-            Vector3 newPosition = currentPosition + Vector3.left * movementSpeed * Time.deltaTime;
-            enemy.transform.position = newPosition;
-
-            yield return null;
-        }
-    }
 }

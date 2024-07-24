@@ -162,7 +162,7 @@ public class GameManager : MonoBehaviour
 
     public void IncreaseScore()
     {
-        audioSource.PlayOneShot(scoreClip);
+        //audioSource.PlayOneShot(scoreClip);
         score++;
         scoreText.text = score.ToString();
         FinalscoreText.text = score.ToString();
