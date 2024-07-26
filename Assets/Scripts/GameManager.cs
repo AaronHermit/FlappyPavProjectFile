@@ -31,11 +31,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip tapClip;
     [SerializeField] private AudioClip collectClip;
-    [SerializeField] private AudioClip scoreClip;
+    [SerializeField] private AudioClip countClip_1;
+    [SerializeField] private AudioClip countClip_2;
     [SerializeField] private AudioClip deadClip;
     [SerializeField] private GameObject audioManger;
+    [Header("CountDown")]
+    [SerializeField] private Text countdownText;
+    [SerializeField] private float countdownTime = 3.0f;
 
-   
     public int score { get; private set; } = 0;
     public int coin { get; private set; } = 0;
 
@@ -58,7 +61,22 @@ public class GameManager : MonoBehaviour
             audioManger.SetActive(false);
         }
     }
-
+    private IEnumerator Countdown()
+    {
+        countdownTime = 3.0f;
+        countdownText.enabled = true;
+        Time.timeScale = 1f;
+        while (countdownTime > 0)
+        {
+            audioSource.PlayOneShot(countClip_1);
+            countdownText.text = countdownTime.ToString("0");
+            yield return new WaitForSeconds(1.0f);
+            countdownTime--;
+           
+        }
+        audioSource.PlayOneShot(countClip_2);
+        countdownText.text = "Go!";
+    }
     public void PlayTap()
     {
         audioSource.PlayOneShot(tapClip);
@@ -71,6 +89,8 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(instuctionInfowaitTime);
         instuctionInfo.SetActive(false);
         mainPlayer.SetActive(true);
+        gameStart = true;
+        countdownText.enabled = false;
     }
     private void OnDestroy()
     {
@@ -108,7 +128,7 @@ public class GameManager : MonoBehaviour
     }
     public void Play()
     {
-        
+        StartCoroutine(Countdown());
         gaemPanel.SetActive(true);
         scoreText.enabled = true;
         playerDead.SetActive(false);
@@ -119,13 +139,13 @@ public class GameManager : MonoBehaviour
         FinalscoreText.text = score.ToString();
         scoreText.text = score.ToString();
         FinalcoinText.text = coin.ToString();
-        gameStart=true;
+        
         startPanel.SetActive(false);
         gameoverPanel.SetActive(false);
         gameOver.SetActive(false);
         StartCoroutine(Instructiontimer());
         
-        Time.timeScale = 1f;
+        
         player.enabled = true;
 
         Pipes[] pipes = FindObjectsOfType<Pipes>();

@@ -35,8 +35,20 @@ public class Spawner : MonoBehaviour
             Pipes pipes = Instantiate(prefabs[randomIndex], transform.position, Quaternion.identity);
             pipes.transform.position += Vector3.up * Random.Range(minHeight, maxHeight);
             pipes.gap = verticalGap;
-           
-            
+
+            // Check if pipes[1] is spawning (assuming prefabs[1] exists and it's the one you want)
+            if (randomIndex == 1)
+            {
+                // Instantiate the enemy prefab next to the right side of pipes[1]
+                GameObject newEnemy = Instantiate(Enemy, pipes.transform.position + new Vector3(verticalGap, 0f, 0f), Quaternion.identity);
+
+                // Set the y position of the enemy prefab (assuming a constant y position)
+                newEnemy.transform.position = new Vector3(newEnemy.transform.position.x, -3f, newEnemy.transform.position.z);
+
+                // Make the enemy prefab a child of the pipes prefab
+                newEnemy.transform.parent = pipes.transform;
+            }
+
         }
     }
     
