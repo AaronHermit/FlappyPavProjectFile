@@ -1435,6 +1435,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1d4e2a006ad618468ca2374f8538741, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  slerp: {fileID: 4662910653486005349}
   playerTag: Player
   poopyAnimation: {fileID: 3769754190319638855}
   spawnPoint1: {fileID: 1797749844107965874}

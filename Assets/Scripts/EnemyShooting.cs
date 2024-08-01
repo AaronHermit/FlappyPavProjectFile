@@ -8,8 +8,10 @@ public class EnemyShooting : MonoBehaviour
     public Transform firePoint;     // Point from where the bullet will be instantiated
     public float shootInterval = 5f; // Interval between each shot
     private float bulletSpeed = 15f;
+    private GameManager gameManager;
     void Start()
     {
+        gameManager = GameManager.Instance;
         // Start the shooting coroutine
         StartCoroutine(ShootContinuously());
     }

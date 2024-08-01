@@ -5,7 +5,7 @@ using UnityEngine;
 public class SlerfScript : MonoBehaviour
 {
 
-
+    public GameObject slerp;
     public string playerTag = "Player"; // Tag of the player GameObject
     private float detectionDistance = 7f; // Distance at which something should happen
 
