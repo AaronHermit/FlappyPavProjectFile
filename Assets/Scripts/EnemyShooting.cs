@@ -43,14 +43,14 @@ public class EnemyShooting : MonoBehaviour
     {
         GameObject childObject = bullet.transform.Find("child")?.gameObject; 
         // Wait for 3 seconds
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
 
         // Check if the bullet still exists (it might have been destroyed by other means)
         if (bullet != null)
         {
             childObject.SetActive(true);
             // Destroy the bullet after 4 seconds from the time it was instantiated
-            Destroy(bullet, 1f);
+            Destroy(bullet, 0.5f);
         }
     }
 

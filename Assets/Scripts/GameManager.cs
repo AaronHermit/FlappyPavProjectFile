@@ -10,7 +10,6 @@ public class GameManager : MonoBehaviour
     public bool gameStart;
     [Header("Player")]
     [SerializeField] private Player player;
-    [SerializeField] private Animator animator;
     [SerializeField] private GameObject mainPlayer;
     [SerializeField] private GameObject playerDead;
     [SerializeField] private GameObject playerAlive;
@@ -56,6 +55,15 @@ public class GameManager : MonoBehaviour
     [Header("Requests")]
     [SerializeField] private UserData userData;
 
+    [Header("Selection Character and Enviroment")]
+    [SerializeField] ScrollRectTracker characterScroll;
+    [SerializeField] ScrollRectTracker enviromentScroll;
+    [SerializeField] GameObject[] charactersAlive;
+    [SerializeField] GameObject[] charactersDeath;
+    [SerializeField] GameObject[] instructionCharacter;
+    [SerializeField] GameObject[] maps;
+    [SerializeField] Sprite[] charcterSprite;
+    [SerializeField] SpriteRenderer characterRenderSprite;
     
 
     public int score { get; private set; } = 0;
@@ -221,7 +229,8 @@ public class GameManager : MonoBehaviour
     }
     public void Play()
     {
-        StartCoroutine(spawner.EnableSpawningAfterDelay());
+        OnChangeCharacterScroll();
+        StartCoroutine(spawner.intialDelay(60));
         rocketPowerupFillImage.fillAmount = 1;
         shieldPowerupFillImage.fillAmount = 1;
         StartCoroutine(Countdown());
@@ -251,6 +260,108 @@ public class GameManager : MonoBehaviour
         }
     }
    
+    public void OnChangeCharacterScroll()
+    {
+        if(characterScroll.contentValue == 1)
+        {
+            charactersAlive[0].SetActive(true);
+            charactersDeath[0].SetActive(true);
+            instructionCharacter[0].SetActive(true);
+            charactersAlive[1].SetActive(false);
+            charactersDeath[1].SetActive(false);
+            instructionCharacter[1].SetActive(false);
+            characterRenderSprite.sprite = charcterSprite[0]; 
+        }
+        else if(characterScroll.contentValue == 2)
+        {
+            charactersAlive[0].SetActive(false);
+            charactersDeath[0].SetActive(false);
+            instructionCharacter[0].SetActive(false);
+            charactersAlive[1].SetActive(true);
+            charactersDeath[1].SetActive(true);
+            instructionCharacter[1].SetActive(true);
+            characterRenderSprite.sprite = charcterSprite[1];
+
+        }
+
+        switch (enviromentScroll.contentValue)
+        {
+            case 1:
+                maps[0].SetActive(true);
+                maps[1].SetActive(false);
+                maps[2].SetActive(false);
+                maps[3].SetActive(false);
+                maps[4].SetActive(false);
+                maps[5].SetActive(false);
+                maps[6].SetActive(false);
+                break;
+            case 2:
+                maps[0].SetActive(false);
+                maps[1].SetActive(true);
+                maps[2].SetActive(false);
+                maps[3].SetActive(false);
+                maps[4].SetActive(false);
+                maps[5].SetActive(false);
+                maps[6].SetActive(false);
+                break;
+            case 3:
+                maps[0].SetActive(false);
+                maps[1].SetActive(false);
+                maps[2].SetActive(true);
+                maps[3].SetActive(false);
+                maps[4].SetActive(false);
+                maps[5].SetActive(false);
+                maps[6].SetActive(false);
+                break;
+            case 4:
+                maps[0].SetActive(false);
+                maps[1].SetActive(false);
+                maps[2].SetActive(false);
+                maps[3].SetActive(true);
+                maps[4].SetActive(false);
+                maps[5].SetActive(false);
+                maps[6].SetActive(false);
+                break;
+            case 5:
+                maps[0].SetActive(false);
+                maps[1].SetActive(false);
+                maps[2].SetActive(false);
+                maps[3].SetActive(false);
+                maps[4].SetActive(true);
+                maps[5].SetActive(false);
+                maps[6].SetActive(false);
+                break;
+            case 6:
+                maps[0].SetActive(false);
+                maps[1].SetActive(false);
+                maps[2].SetActive(false);
+                maps[3].SetActive(false);
+                maps[4].SetActive(false);
+                maps[5].SetActive(true);
+                maps[6].SetActive(false);
+                break;
+            case 7:
+                maps[0].SetActive(false);
+                maps[1].SetActive(false);
+                maps[2].SetActive(false);
+                maps[3].SetActive(false);
+                maps[4].SetActive(false);
+                maps[5].SetActive(false);
+                maps[6].SetActive(true);
+                break;
+            default:
+                maps[0].SetActive(true);
+                maps[1].SetActive(false);
+                maps[2].SetActive(false);
+                maps[3].SetActive(false);
+                maps[4].SetActive(false);
+                maps[5].SetActive(false);
+                maps[6].SetActive(false);
+                break;
+        }
+    }
+
+    
     public void Home()
     {
         gaemPanel.SetActive(false);
@@ -267,6 +378,7 @@ public class GameManager : MonoBehaviour
            
 
             StopAllCoroutines();
+            
             player.isWaiting = false;
             audioSource.PlayOneShot(deadClip);
             gaemPanel.SetActive(false);
@@ -300,6 +412,7 @@ public class GameManager : MonoBehaviour
     }
     public void IncreaseCoins()
     {
+
         audioSource.PlayOneShot(collectClip);
         coin++;
         coinText.text = coin.ToString();
