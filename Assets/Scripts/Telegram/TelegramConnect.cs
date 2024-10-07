@@ -20,6 +20,8 @@ public class TelegramConnect : MonoBehaviour
     [DllImport("__Internal")]
     public static extern int GetUserId();
 
+    [DllImport ("__Internal")]
+    public static extern string Validate(string url);
     
 
 }

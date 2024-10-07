@@ -31,4 +31,23 @@ mergeInto(LibraryManager.library, {
       return userId;
     }
   },
+  Validate: function (url) {
+    if (window.Telegram.WebApp) {
+      (async () => {
+        const l = UTF8ToString(url);
+        const initData = window.Telegram.WebApp.initData;
+        console.log({ initData });
+        const response = await fetch(`${l}validate`, {
+          body: initData,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        })
+          .then((res) => res.json())
+          .catch((err) => console.log({ err }));
+        console.log({ response });
+      })();
+    }
+  },
 });

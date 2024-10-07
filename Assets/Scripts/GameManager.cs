@@ -27,6 +27,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject gameoverPanel;
     [SerializeField] private GameObject gameOver;
     [SerializeField] private GameObject instuctionInfo;
+    [SerializeField] private GameObject profilePanel;
     [SerializeField] private float instuctionInfowaitTime;
     [Header("UserData textFields")]
     [SerializeField] private Text UserNameFinal;
@@ -42,6 +43,7 @@ public class GameManager : MonoBehaviour
     [Header("CountDown")]
     [SerializeField] private Text countdownText;
     [SerializeField] private float countdownTime = 3.0f;
+    private int currentScore = 0;
 
     [Header("Power Ups")]
     [SerializeField] private GameObject rocketPowerUpElement;
@@ -64,46 +66,71 @@ public class GameManager : MonoBehaviour
     [SerializeField] GameObject[] maps;
     [SerializeField] Sprite[] charcterSprite;
     [SerializeField] SpriteRenderer characterRenderSprite;
-    
+    [SerializeField] private Image leftmove;
+    [SerializeField] private Image rightmove;
+    [SerializeField] private Sprite activeleftSprite;
+    [SerializeField] private Sprite activerightSprite;
+    [SerializeField] private Sprite inactiveleftSprite;
+    [SerializeField] private Sprite inactiverightSprite;
+
+    [Header("Buffs")]
+    [SerializeField] public bool isLifeBuff;
+    [SerializeField] public int isLifeCount;
+    [SerializeField] public bool is2xBuff;
+    [SerializeField] public bool is5xBuff;
+    [SerializeField] public GameObject ExtraLifeEffect;
+    [SerializeField] public Toggle isLifeBuffToggle;
+    [SerializeField] public Toggle is2xBuffToggle;
+    [SerializeField] public Toggle is5xBuffToggle;
+    [SerializeField] public Toggle[] buffsToggle;
+
+    [Header("Request Handler")]
+    [SerializeField] private RequestHandler requestHandler;
 
     public int score { get; private set; } = 0;
     public int coin { get; private set; } = 0;
 
     private void Awake()
     {
-        if (Instance != null) {
+        if (Instance != null)
+        {
             DestroyImmediate(gameObject);
-        } else {
+        }
+        else
+        {
             Instance = this;
         }
     }
 
     public void RocketPowerUp()
     {
-        StartCoroutine(powerUpTimer(rocketPowerUpElement, "rocket",rocketPowerupFillImage));
+        StartCoroutine(powerUpTimer(rocketPowerUpElement, "rocket", rocketPowerupFillImage, 3f));
 
     }
     public void ShieldPowerUp()
     {
-        StartCoroutine(powerUpTimer(shieldPowerUpElement,"shield",shieldPowerupFillImage));
+        StartCoroutine(powerUpTimer(shieldPowerUpElement, "shield", shieldPowerupFillImage, 6f));
     }
-    IEnumerator powerUpTimer(GameObject powerup,string power,Image powerupFillImage)
+
+
+
+    IEnumerator powerUpTimer(GameObject powerup, string power, Image powerupFillImage, float duration)
     {
         powerup.SetActive(true);
-        
+
         if (power == "rocket")
         {
-            
+
             RocketPowerUpSpeedEffect.SetActive(true);
             ImmuneRocketPlayer = true;
             mainPlayer.GetComponent<BoxCollider2D>().enabled = true;
         }
-        if (power =="shield")
+        if (power == "shield")
         {
             ImmuneShieldPlayer = true;
 
         }
-        float duration = 5f;
+
         float elapsed = 0f;
 
         while (elapsed < duration)
@@ -123,13 +150,11 @@ public class GameManager : MonoBehaviour
             ImmuneRocketPlayer = false;
             RocketPowerUpSpeedEffect.SetActive(false);
             mainPlayer.GetComponent<BoxCollider2D>().enabled = false;
-
-
         }
     }
     public void MuteAction(Toggle audioToggle)
     {
-        if(audioToggle.isOn)
+        if (audioToggle.isOn)
         {
             audioManger.SetActive(true);
         }
@@ -151,7 +176,7 @@ public class GameManager : MonoBehaviour
             countdownText.text = countdownTime.ToString("0");
             yield return new WaitForSeconds(1.0f);
             countdownTime--;
-           
+
         }
         audioSource.PlayOneShot(countClip_2);
         countdownText.text = "Go!";
@@ -161,7 +186,7 @@ public class GameManager : MonoBehaviour
 
     public void ShootingSfx(bool shot)
     {
-        if(!shot)
+        if (!shot)
         {
 
         }
@@ -182,11 +207,12 @@ public class GameManager : MonoBehaviour
     {
         audioSource.PlayOneShot(tapClip);
     }
-    
+
     IEnumerator Instructiontimer()
     {
         mainPlayer.SetActive(false);
         instuctionInfo.SetActive(true);
+        gameStart = false;
         yield return new WaitForSeconds(instuctionInfowaitTime);
         instuctionInfo.SetActive(false);
         mainPlayer.SetActive(true);
@@ -195,7 +221,8 @@ public class GameManager : MonoBehaviour
     }
     private void OnDestroy()
     {
-        if (Instance == this) {
+        if (Instance == this)
+        {
             Instance = null;
         }
     }
@@ -229,7 +256,12 @@ public class GameManager : MonoBehaviour
     }
     public void Play()
     {
+        LifeBuff(isLifeBuffToggle);
+        // FivexBuffOnWork(is5xBuffToggle);
+        // TwoxBuffOnWork(is2xBuffToggle);
+
         OnChangeCharacterScroll();
+        ResetBuff();
         StartCoroutine(spawner.intialDelay(60));
         rocketPowerupFillImage.fillAmount = 1;
         shieldPowerupFillImage.fillAmount = 1;
@@ -244,25 +276,27 @@ public class GameManager : MonoBehaviour
         FinalscoreText.text = score.ToString();
         scoreText.text = score.ToString();
         FinalcoinText.text = coin.ToString();
-        Select_Character_Map_Panel.SetActive(false) ;
+        Select_Character_Map_Panel.SetActive(false);
         startPanel.SetActive(false);
         gameoverPanel.SetActive(false);
         gameOver.SetActive(false);
         StartCoroutine(Instructiontimer());
-        
-        
+
+
         player.enabled = true;
 
         Pipes[] pipes = FindObjectsOfType<Pipes>();
 
-        for (int i = 0; i < pipes.Length; i++) {
+        for (int i = 0; i < pipes.Length; i++)
+        {
             Destroy(pipes[i].gameObject);
         }
     }
-   
+
     public void OnChangeCharacterScroll()
     {
-        if(characterScroll.contentValue == 1)
+
+        if (characterScroll.contentValue == 1)
         {
             charactersAlive[0].SetActive(true);
             charactersDeath[0].SetActive(true);
@@ -270,9 +304,15 @@ public class GameManager : MonoBehaviour
             charactersAlive[1].SetActive(false);
             charactersDeath[1].SetActive(false);
             instructionCharacter[1].SetActive(false);
-            characterRenderSprite.sprite = charcterSprite[0]; 
+            charactersAlive[2].SetActive(false);
+            charactersDeath[2].SetActive(false);
+            instructionCharacter[2].SetActive(false);
+            charactersAlive[3].SetActive(false);
+            charactersDeath[3].SetActive(false);
+            instructionCharacter[3].SetActive(false);
+            characterRenderSprite.sprite = charcterSprite[0];
         }
-        else if(characterScroll.contentValue == 2)
+        else if (characterScroll.contentValue == 2)
         {
             charactersAlive[0].SetActive(false);
             charactersDeath[0].SetActive(false);
@@ -280,8 +320,46 @@ public class GameManager : MonoBehaviour
             charactersAlive[1].SetActive(true);
             charactersDeath[1].SetActive(true);
             instructionCharacter[1].SetActive(true);
+            charactersAlive[2].SetActive(false);
+            charactersDeath[2].SetActive(false);
+            instructionCharacter[2].SetActive(false);
+            charactersAlive[3].SetActive(false);
+            charactersDeath[3].SetActive(false);
+            instructionCharacter[3].SetActive(false);
             characterRenderSprite.sprite = charcterSprite[1];
 
+        }
+        else if (characterScroll.contentValue == 3)
+        {
+            charactersAlive[0].SetActive(false);
+            charactersDeath[0].SetActive(false);
+            instructionCharacter[0].SetActive(false);
+            charactersAlive[1].SetActive(false);
+            charactersDeath[1].SetActive(false);
+            instructionCharacter[1].SetActive(false);
+            charactersAlive[2].SetActive(true);
+            charactersDeath[2].SetActive(true);
+            instructionCharacter[2].SetActive(true);
+            charactersAlive[3].SetActive(false);
+            charactersDeath[3].SetActive(false);
+            instructionCharacter[3].SetActive(false);
+            characterRenderSprite.sprite = charcterSprite[2];
+        }
+        else if (characterScroll.contentValue == 4)
+        {
+            charactersAlive[0].SetActive(false);
+            charactersDeath[0].SetActive(false);
+            instructionCharacter[0].SetActive(false);
+            charactersAlive[1].SetActive(false);
+            charactersDeath[1].SetActive(false);
+            instructionCharacter[1].SetActive(false);
+            charactersAlive[2].SetActive(false);
+            charactersDeath[2].SetActive(false);
+            instructionCharacter[2].SetActive(false);
+            charactersAlive[3].SetActive(true);
+            charactersDeath[3].SetActive(true);
+            instructionCharacter[3].SetActive(true);
+            characterRenderSprite.sprite = charcterSprite[3];
         }
 
         switch (enviromentScroll.contentValue)
@@ -294,6 +372,8 @@ public class GameManager : MonoBehaviour
                 maps[4].SetActive(false);
                 maps[5].SetActive(false);
                 maps[6].SetActive(false);
+                spawner.chooseTheRightMap(enviromentScroll.contentValue);
+
                 break;
             case 2:
                 maps[0].SetActive(false);
@@ -303,6 +383,8 @@ public class GameManager : MonoBehaviour
                 maps[4].SetActive(false);
                 maps[5].SetActive(false);
                 maps[6].SetActive(false);
+                spawner.chooseTheRightMap(enviromentScroll.contentValue);
+
                 break;
             case 3:
                 maps[0].SetActive(false);
@@ -312,6 +394,8 @@ public class GameManager : MonoBehaviour
                 maps[4].SetActive(false);
                 maps[5].SetActive(false);
                 maps[6].SetActive(false);
+                spawner.chooseTheRightMap(enviromentScroll.contentValue);
+
                 break;
             case 4:
                 maps[0].SetActive(false);
@@ -321,6 +405,8 @@ public class GameManager : MonoBehaviour
                 maps[4].SetActive(false);
                 maps[5].SetActive(false);
                 maps[6].SetActive(false);
+                spawner.chooseTheRightMap(enviromentScroll.contentValue);
+
                 break;
             case 5:
                 maps[0].SetActive(false);
@@ -330,6 +416,8 @@ public class GameManager : MonoBehaviour
                 maps[4].SetActive(true);
                 maps[5].SetActive(false);
                 maps[6].SetActive(false);
+                spawner.chooseTheRightMap(enviromentScroll.contentValue);
+
                 break;
             case 6:
                 maps[0].SetActive(false);
@@ -339,6 +427,8 @@ public class GameManager : MonoBehaviour
                 maps[4].SetActive(false);
                 maps[5].SetActive(true);
                 maps[6].SetActive(false);
+                spawner.chooseTheRightMap(enviromentScroll.contentValue);
+
                 break;
             case 7:
                 maps[0].SetActive(false);
@@ -348,6 +438,8 @@ public class GameManager : MonoBehaviour
                 maps[4].SetActive(false);
                 maps[5].SetActive(false);
                 maps[6].SetActive(true);
+                spawner.chooseTheRightMap(enviromentScroll.contentValue);
+
                 break;
             default:
                 maps[0].SetActive(true);
@@ -357,52 +449,107 @@ public class GameManager : MonoBehaviour
                 maps[4].SetActive(false);
                 maps[5].SetActive(false);
                 maps[6].SetActive(false);
+                spawner.chooseTheRightMap(enviromentScroll.contentValue);
+
                 break;
         }
     }
 
-    
+    public void onButtonChangeForEnviroment()
+    {
+        if (enviromentScroll.contentValue == 1)
+        {
+            leftmove.sprite = inactiveleftSprite;
+            rightmove.sprite = activerightSprite;
+        }
+        else if (enviromentScroll.contentValue == 7)
+        {
+            leftmove.sprite = activeleftSprite;
+            rightmove.sprite = inactiverightSprite;
+        }
+        else
+        {
+            leftmove.sprite = activeleftSprite;
+            rightmove.sprite = activerightSprite;
+        }
+    }
+
     public void Home()
     {
         gaemPanel.SetActive(false);
         gameStart = false;
-        gameoverPanel.SetActive(false) ;
+        gameoverPanel.SetActive(false);
         startPanel.SetActive(true);
-        pausePanel.SetActive(false );
+        pausePanel.SetActive(false);
         Pause();
     }
     public void GameOver()
     {
-        if(!ImmuneShieldPlayer && !ImmuneRocketPlayer)
+        if (!ImmuneShieldPlayer && !ImmuneRocketPlayer)
         {
-           
 
-            StopAllCoroutines();
-            
-            player.isWaiting = false;
-            audioSource.PlayOneShot(deadClip);
-            gaemPanel.SetActive(false);
-            playerDead.SetActive(true);
-            playerAlive.SetActive(false);
-            scoreText.enabled = false;
-            gameStart = false;
-            rocketPowerUpElement.SetActive(false);
-            shieldPowerUpElement.SetActive(false);
-            gameoverPanel.SetActive(true);
-            gameOver.SetActive(true);
-            RocketPowerUpSpeedEffect.SetActive(false);
-            Pause();
-            var u = TelegramConnect.GetUserData();
-            if(u != null)
-            { 
-                userData = JsonUtility.FromJson<UserData>(u);
-                UserNameFinal.text = userData.user.first_name;
+            if (!isLifeBuff)
+            {
+                StopAllCoroutines();
+                // StartCoroutine(SmoothScoreIncrement(score,2f,FinalscoreText));
+                // StartCoroutine(SmoothScoreIncrement(coin, 2f,FinalcoinText));
+                player.isWaiting = false;
+                audioSource.PlayOneShot(deadClip);
+                gaemPanel.SetActive(false);
+                playerDead.SetActive(true);
+                playerAlive.SetActive(false);
+                scoreText.enabled = false;
+                gameStart = false;
+                rocketPowerUpElement.SetActive(false);
+                shieldPowerUpElement.SetActive(false);
+                gameoverPanel.SetActive(true);
+                gameOver.SetActive(true);
+                RocketPowerUpSpeedEffect.SetActive(false);
+                Pause();
+                requestHandler.SendScore(score, coin, enviromentScroll.contentValue, characterScroll.contentValue);
+                var u = TelegramConnect.GetUserData();
+                if (u != null)
+                {
+                    userData = JsonUtility.FromJson<UserData>(u);
+                    UserNameFinal.text = userData.user.first_name;
+                }
+
+
             }
-        }
-       
-    }
-   
+            else
+            {
 
+                StartCoroutine(Instructiontimer());
+                StartCoroutine(Delay(1f, ExtraLifeEffect));
+
+            }
+
+        }
+
+    }
+
+    IEnumerator Delay(float time, GameObject gameObject)
+    {
+        gameObject.SetActive(true);
+        // StartCoroutine(player.HoldStill());
+        yield return new WaitForSeconds(time);
+        gameObject.SetActive(false);
+        isLifeBuff = false;
+    }
+
+
+    public void SwitchProfileOnAndOffPanel(bool value)
+    {
+
+        if (value)
+        {
+            profilePanel.SetActive(true);
+        }
+        else
+        {
+            profilePanel.SetActive(false);
+        }
+    }
     public void IncreaseScore()
     {
         //audioSource.PlayOneShot(scoreClip);
@@ -419,5 +566,73 @@ public class GameManager : MonoBehaviour
         FinalcoinText.text = "+" + coin.ToString();
     }
 
+    public void PanelLeaderboardOff(GameObject panel)
+    {
+        panel.SetActive(false);
+    }
 
+
+    public void TwoxBuffOnWork(Toggle toggle)
+    {
+        if (toggle.isOn)
+        {
+            spawner.probabilityForIndex6 = 0.2f;
+            buffsToggle[1].isOn = true;
+        }
+        else
+        {
+            spawner.probabilityForIndex6 = 0.1f;
+            buffsToggle[1].isOn = false;
+        }
+    }
+    public void FivexBuffOnWork(Toggle toggle)
+    {
+        if (toggle.isOn)
+        {
+            spawner.probabilityForIndex6 = 0.5f;
+            buffsToggle[0].isOn = true;
+        }
+        else
+        {
+            buffsToggle[0].isOn = false;
+            spawner.probabilityForIndex6 = 0.1f;
+        }
+    }
+
+    public void LifeBuff(Toggle toggle)
+    {
+        if (toggle.isOn)
+        {
+            // isLifeCount = 1;
+            isLifeBuff = true;
+
+            buffsToggle[2].isOn = true;
+        }
+        else
+        {
+            isLifeBuff = false;
+            // isLifeCount = 0;
+            buffsToggle[2].isOn = false;
+        }
+    }
+    public void ResetBuff()
+    {
+        // spawner.probabilityForIndex6    =   0.1f;
+        // buffsToggle[0].isOn = false;
+        // buffsToggle[1].isOn = false;
+    }
+   
+    
+    public void ActivePage(GameObject panel)
+    {
+        panel.SetActive(true);
+        startPanel.SetActive(false); 
+        Select_Character_Map_Panel.SetActive(false); 
+        gaemPanel.SetActive(false); 
+        pausePanel.SetActive(false); 
+        gameoverPanel.SetActive(false); 
+        gameOver.SetActive(false); 
+        instuctionInfo.SetActive(false); 
+        profilePanel.SetActive(false); 
+    }
 }

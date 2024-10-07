@@ -17,6 +17,7 @@ public class Player : MonoBehaviour
     [SerializeField] GameManager gameManager;
 
     public bool isWaiting = false;
+    public bool isWaitingtrail = false;
 
     private void Awake()
     {
@@ -65,16 +66,33 @@ public class Player : MonoBehaviour
         StartCoroutine(MoveToYZeroAndWait());
     }
 
-    private IEnumerator MoveToYZeroAndWait()
+    public IEnumerator MoveToYZeroAndWait()
     {
         isWaiting = true;
         GameManager.Instance.RocketPowerUp();
         Vector3 position = transform.position;
         position.y = 0f;
         transform.position = position;
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(3f);
         isWaiting = false;
         
+    }
+
+    
+
+    public void OnButtonBuff()
+    {
+        StartCoroutine(isLifeBuffTimer());
+
+    }
+    private IEnumerator isLifeBuffTimer()
+    {
+        isWaiting = false;
+        Vector3 position = transform.position;
+        position.y = 0f;
+        transform.position = position;
+        yield return new WaitForSeconds(1f);
+        isWaiting = true;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -99,7 +117,7 @@ public class Player : MonoBehaviour
         else if (other.gameObject.CompareTag("Coins"))
         {
             GameManager.Instance.IncreaseCoins();
-            
+            other.gameObject.GetComponent<BoxCollider2D>().enabled = false;
         }
         else if (other.gameObject.CompareTag("Finish"))
         {

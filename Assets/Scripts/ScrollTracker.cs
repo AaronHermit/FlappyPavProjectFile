@@ -10,6 +10,7 @@ public class ScrollRectTracker : MonoBehaviour
 
     private RectTransform[] contentItems;
 
+    
     public int contentValue;
     void Start()
     {
@@ -17,6 +18,7 @@ public class ScrollRectTracker : MonoBehaviour
         for (int i = 0; i < contentPanel.childCount; i++)
         {
             contentItems[i] = contentPanel.GetChild(i).GetComponent<RectTransform>();
+            
         }
 
         scrollRect.onValueChanged.AddListener(OnScroll);
@@ -29,7 +31,7 @@ public class ScrollRectTracker : MonoBehaviour
             if (IsVisible(item))
             {
                 contentValue = Int32.Parse(item.name);
-                Debug.Log( item.name);
+                
                 break;
             }
         }
