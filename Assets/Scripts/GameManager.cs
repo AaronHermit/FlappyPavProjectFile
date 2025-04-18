@@ -28,6 +28,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject gameOver;
     [SerializeField] private GameObject instuctionInfo;
     [SerializeField] private GameObject profilePanel;
+    [SerializeField] private GameObject invitePanel;
     [SerializeField] private float instuctionInfowaitTime;
     [Header("UserData textFields")]
     [SerializeField] private Text UserNameFinal;
@@ -537,7 +538,15 @@ public class GameManager : MonoBehaviour
         isLifeBuff = false;
     }
 
+    public void SwitchInvitePanel(bool value)
+    {
 
+        if (value)
+        {
+            invitePanel.SetActive(value);
+            requestHandler.InviteLinkLeaderBoard();
+        }
+    }
     public void SwitchProfileOnAndOffPanel(bool value)
     {
 

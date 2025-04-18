@@ -15,6 +15,12 @@ public class RequestHandler : MonoBehaviour
     
     private const string baseUrl = "https://pav-backend.onrender.com/";
 
+    [Header("InviteFrom UI")]
+
+    public Text[] inviteFriendsText_Scores;
+    public Text[] inviteFriendsText_Names;
+    public Text[] inviteFriendsTextPlayerDetails;
+
     [Header("Profile UI")]
     public Text username;
     public Text displayname;
@@ -75,10 +81,26 @@ public class RequestHandler : MonoBehaviour
         public int score;
         public string url;
     }
+
+    [Serializable]
+    public class InviteDetail
+    {
+        public string username;
+        public string first_name;
+        public string lastName;
+        public string invites;
+        public string userId;
+    }
     [Serializable]
     public class ResultWrapper10
     {
         public List<PlayerScore> results;
+    }
+
+    [Serializable]
+    public class InviteResult
+    {
+        public List<InviteDetail> results;
     }
     [Header("Leaderboard 10")]
     public GameObject leaderBoardUI;
@@ -242,6 +264,51 @@ public class RequestHandler : MonoBehaviour
                 
                 t.GetChild(0).GetChild(2).GetComponent<Text>().text = resultWrapper.results[i].firstName;
                 t.GetChild(0).GetChild(4).GetChild(0).GetComponent<Text>().text = resultWrapper.results[i].score.ToString("#,##0");
+            }
+        }
+    }
+
+    public void ShareInviteLink()
+    {
+        try
+        {
+            TelegramConnect.ShareInviteLink("https://t.me/flappy_pav_bot?start=ref" + userData?.user?.id);
+        }
+        catch (Exception e)
+        {
+            Debug.Log("ShareInviteLink Error: " + e.Message);
+        }
+    }
+
+    public void InviteLinkLeaderBoard()
+    {
+        StartCoroutine(InviteLeaderboardGetRequest());
+        
+    }
+    private IEnumerator InviteLeaderboardGetRequest()
+    {
+        string url = "https://pav-backend.onrender.com/reports/invite-leaderboard";
+        UnityWebRequest request = UnityWebRequest.Get(url);
+        yield return request.SendWebRequest();
+        // leaderBoardUI.SetActive(true);
+        if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+        {
+            Debug.LogError("Error: " + request.error);
+        }
+        else
+        {
+            
+
+            string jsonText = request.downloadHandler.text;
+            Debug.Log(jsonText);
+            InviteResult resultWrapper = JsonUtility.FromJson<InviteResult>("{\"results\":" + jsonText + "}");
+
+             for (int i = 0; i < resultWrapper.results.Count; i++)
+            {
+             
+                inviteFriendsText_Names[i].text = resultWrapper.results[i].first_name;
+                inviteFriendsText_Scores[i].text = resultWrapper.results[i].invites.ToString();
+    
             }
         }
     }
